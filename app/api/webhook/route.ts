@@ -14,13 +14,22 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const rows = body.rows;
-    // VALIDASI ROWS
-    if (!Array.isArray(rows)) {
-      return new Response('Invalid rows payload', { status: 400 });
+    let rows = body.rows;
+
+    // 🔥 FIX UTAMA: handle Glide JSON string
+    if (typeof rows === 'string') {
+      try {
+        rows = JSON.parse(rows);
+      } catch {
+        return new Response('Rows is not valid JSON', { status: 400 });
+      }
     }
 
-    // ✅ GENERATED DATE DIBUAT DI SERVER (ISO, PASTI VALID)
+    if (!Array.isArray(rows)) {
+      return new Response('Rows must be an array', { status: 400 });
+    }
+
+    // ✅ generatedDate dibuat di server
     const generatedDate = new Date().toISOString();
 
     saveAttendance(userId, rows, generatedDate);
